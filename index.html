@@ -7,16 +7,43 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="container">
+    <!-- Welcome Modal -->
+    <div class="modal" id="welcomeModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="logo-large">
+                    <svg class="logo-icon-large" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                        <path d="M12 6v6l4 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                    <h1>Welcome to Rotipani</h1>
+                </div>
+                <p class="modal-subtitle">Track your mess meals effortlessly</p>
+            </div>
+            <div class="modal-body">
+                <label for="userName" class="input-label">What's your name?</label>
+                <input type="text" id="userName" class="name-input" placeholder="Enter your name" autocomplete="off">
+                <button class="start-button" onclick="startApp()">Get Started 🚀</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container" id="mainApp" style="display: none;">
         <header class="header">
             <div class="logo">
                 <svg class="logo-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
                     <path d="M12 6v6l4 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                 </svg>
-                <h1>Rotipani</h1>
+                <div>
+                    <h1>Rotipani</h1>
+                    <p class="user-greeting" id="userGreeting"></p>
+                </div>
             </div>
-            <div class="date-display" id="currentDate"></div>
+            <div class="header-right">
+                <div class="date-display" id="currentDate"></div>
+                <button class="settings-button" onclick="openSettings()">⚙️</button>
+            </div>
         </header>
 
         <div class="stats-container">
@@ -28,10 +55,17 @@
                 </div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon">📊</div>
+                <div class="stat-icon">📅</div>
                 <div class="stat-info">
                     <div class="stat-value" id="weeklyProgress">0%</div>
                     <div class="stat-label">Weekly Progress</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">📊</div>
+                <div class="stat-info">
+                    <div class="stat-value" id="monthlyProgress">0%</div>
+                    <div class="stat-label">Monthly Progress</div>
                 </div>
             </div>
             <div class="stat-card">
@@ -83,12 +117,62 @@
             </div>
         </div>
 
-        <div class="history-section">
+        <div class="tabs-container">
+            <button class="tab-button active" onclick="switchTab('weekly')">Weekly View</button>
+            <button class="tab-button" onclick="switchTab('monthly')">Monthly View</button>
+        </div>
+
+        <div class="history-section" id="weeklySection">
             <div class="history-header">
-                <h2 class="section-title">Weekly History</h2>
-                <button class="clear-button" onclick="clearHistory()">Clear History</button>
+                <h2 class="section-title">Weekly History (Last 7 Days)</h2>
             </div>
-            <div class="calendar-grid" id="weeklyCalendar"></div>
+            <div class="calendar-grid weekly-grid" id="weeklyCalendar"></div>
+        </div>
+
+        <div class="history-section" id="monthlySection" style="display: none;">
+            <div class="history-header">
+                <h2 class="section-title">Monthly History</h2>
+                <div class="month-selector">
+                    <button class="month-nav-btn" onclick="changeMonth(-1)">◀</button>
+                    <span class="current-month" id="currentMonth"></span>
+                    <button class="month-nav-btn" onclick="changeMonth(1)">▶</button>
+                </div>
+            </div>
+            <div class="monthly-stats">
+                <div class="monthly-stat">
+                    <span class="monthly-stat-label">Total Meals:</span>
+                    <span class="monthly-stat-value" id="monthlyTotal">0/60</span>
+                </div>
+                <div class="monthly-stat">
+                    <span class="monthly-stat-label">Lunch:</span>
+                    <span class="monthly-stat-value" id="monthlyLunch">0/30</span>
+                </div>
+                <div class="monthly-stat">
+                    <span class="monthly-stat-label">Dinner:</span>
+                    <span class="monthly-stat-value" id="monthlyDinner">0/30</span>
+                </div>
+            </div>
+            <div class="calendar-grid monthly-grid" id="monthlyCalendar"></div>
+        </div>
+
+        <div class="action-buttons">
+            <button class="action-button export-button" onclick="exportData()">📥 Export Data</button>
+            <button class="action-button clear-button" onclick="clearHistory()">🗑️ Clear History</button>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal" id="settingsModal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Settings</h2>
+                <button class="close-button" onclick="closeSettings()">✕</button>
+            </div>
+            <div class="modal-body">
+                <label for="editUserName" class="input-label">Your Name</label>
+                <input type="text" id="editUserName" class="name-input" placeholder="Enter your name">
+                <button class="start-button" onclick="updateName()">Update Name</button>
+            </div>
         </div>
     </div>
 
