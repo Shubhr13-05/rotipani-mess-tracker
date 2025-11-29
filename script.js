@@ -360,7 +360,188 @@ function updateName() {
     closeSettings();
 }
 
-// Export data
+// View data table
+function viewDataTable() {
+    const userName = localStorage.getItem('userName');
+    const allData = [];
+    
+    // Collect all meal data
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key !== 'userName' && key.match(/^\d{4}-\d{2}-\d{2}$/)) {
+            const meals = JSON.parse(localStorage.getItem(key));
+            allData.push({
+                date: key,
+                lunch: meals.lunch || false,
+                dinner: meals.dinner || false,
+                lunchTime: meals.lunchTime || '-',
+                dinnerTime: meals.dinnerTime || '-'
+            });
+        }
+    }
+    
+    // Sort by date (newest first)
+    allData.sort((a, b) => new Date(b.date) - new Date(a.date));
+    
+    // Create table HTML
+    let tableHTML = `
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Day</th>
+                    <th>Lunch</th>
+                    <th>Lunch Time</th>
+                    <th>Dinner</th>
+                    <th>Dinner Time</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+    
+    const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    
+    allData.forEach(row => {
+        const date = new Date(row.date);
+        const dayName = dayNames[date.getDay()];
+        const formattedDate = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        
+        const lunchTime = row.lunchTime !== '-' ? new Date(row.lunchTime).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : '-';
+        const dinnerTime = row.dinnerTime !== '-' ? new Date(row.dinnerTime).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : '-';
+        
+        const total = (row.lunch ? 1 : 0) + (row.dinner ? 1 : 0);
+        
+        tableHTML += `
+            <tr>
+                <td>${formattedDate}</td>
+                <td>${dayName}</td>
+                <td><span class="status-badge ${row.lunch ? 'status-yes' : 'status-no'}">${row.lunch ? 'Yes' : 'No'}</span></td>
+                <td>${lunchTime}</td>
+                <td><span class="status-badge ${row.dinner ? 'status-yes' : 'status-no'}">${row.dinner ? 'Yes' : 'No'}</span></td>
+                <td>${dinnerTime}</td>
+                <td><strong>${total}/2</strong></td>
+            </tr>
+        `;
+    });
+    
+    tableHTML += `
+            </tbody>
+        </table>
+    `;
+    
+    document.getElementById('dataTableContainer').innerHTML = tableHTML;
+    document.getElementById('dataTableModal').style.display = 'flex';
+}
+
+// Close data table
+function closeDataTable() {
+    document.getElementById('dataTableModal').style.display = 'none';
+}
+
+// Export table as CSV
+function exportTableAsCSV() {
+    const userName = localStorage.getItem('userName');
+    const allData = [];
+    
+    // Collect all meal data
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key !== 'userName' && key.match(/^\d{4}-\d{2}-\d{2}$/)) {
+            const meals = JSON.parse(localStorage.getItem(key));
+            allData.push({
+                date: key,
+                lunch: meals.lunch || false,
+                dinner: meals.dinner || false,
+                lunchTime: meals.lunchTime || '-',
+                dinnerTime: meals.dinnerTime || '-'
+            });
+        }
+    }
+    
+    // Sort by date
+    allData.sort((a, b) => new Date(b.date) - new Date(a.date));
+    
+    // Create CSV content
+    let csv = 'Date,Day,Lunch,Lunch Time,Dinner,Dinner Time,Total Meals\n';
+    
+    const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    
+    allData.forEach(row => {
+        const date = new Date(row.date);
+        const dayName = dayNames[date.getDay()];
+        const formattedDate = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        
+        const lunchTime = row.lunchTime !== '-' ? new Date(row.lunchTime).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : '-';
+        const dinnerTime = row.dinnerTime !== '-' ? new Date(row.dinnerTime).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : '-';
+        
+        const total = (row.lunch ? 1 : 0) + (row.dinner ? 1 : 0);
+        
+        csv += `"${formattedDate}","${dayName}","${row.lunch ? 'Yes' : 'No'}","${lunchTime}","${row.dinner ? 'Yes' : 'No'}","${dinnerTime}",${total}\n`;
+    });
+    
+    // Download CSV
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `rotipani-${userName}-${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+    
+    alert('CSV file downloaded successfully! ✅');
+}
+
+// Copy table data
+function copyTableData() {
+    const allData = [];
+    
+    // Collect all meal data
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key !== 'userName' && key.match(/^\d{4}-\d{2}-\d{2}$/)) {
+            const meals = JSON.parse(localStorage.getItem(key));
+            allData.push({
+                date: key,
+                lunch: meals.lunch || false,
+                dinner: meals.dinner || false,
+                lunchTime: meals.lunchTime || '-',
+                dinnerTime: meals.dinnerTime || '-'
+            });
+        }
+    }
+    
+    // Sort by date
+    allData.sort((a, b) => new Date(b.date) - new Date(a.date));
+    
+    // Create text content
+    let text = 'Date\t\tDay\t\tLunch\tLunch Time\tDinner\tDinner Time\tTotal\n';
+    text += '='.repeat(80) + '\n';
+    
+    const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    
+    allData.forEach(row => {
+        const date = new Date(row.date);
+        const dayName = dayNames[date.getDay()];
+        const formattedDate = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        
+        const lunchTime = row.lunchTime !== '-' ? new Date(row.lunchTime).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : '-';
+        const dinnerTime = row.dinnerTime !== '-' ? new Date(row.dinnerTime).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : '-';
+        
+        const total = (row.lunch ? 1 : 0) + (row.dinner ? 1 : 0);
+        
+        text += `${formattedDate}\t${dayName}\t${row.lunch ? 'Yes' : 'No'}\t${lunchTime}\t\t${row.dinner ? 'Yes' : 'No'}\t${dinnerTime}\t\t${total}/2\n`;
+    });
+    
+    // Copy to clipboard
+    navigator.clipboard.writeText(text).then(() => {
+        alert('Data copied to clipboard! ✅\nYou can paste it in Excel, Google Sheets, or any text editor.');
+    }).catch(() => {
+        alert('Failed to copy data. Please try again.');
+    });
+}
+
+// Export data as JSON
 function exportData() {
     const userName = localStorage.getItem('userName');
     const allData = {};
@@ -377,9 +558,50 @@ function exportData() {
     const url = URL.createObjectURL(dataBlob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `rotipani-data-${userName}-${new Date().toISOString().split('T')[0]}.json`;
+    link.download = `rotipani-backup-${userName}-${new Date().toISOString().split('T')[0]}.json`;
     link.click();
     URL.revokeObjectURL(url);
+    
+    alert('Backup file downloaded! ✅\nKeep this file safe to restore your data later.');
+}
+
+// Import data
+function importData(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const data = JSON.parse(e.target.result);
+            
+            if (!data.userName || !data.meals) {
+                alert('Invalid backup file format! ❌');
+                return;
+            }
+            
+            if (confirm(`Import data for ${data.userName}?\n\nThis will replace your current data. Continue?`)) {
+                // Clear existing data
+                localStorage.clear();
+                
+                // Import new data
+                localStorage.setItem('userName', data.userName);
+                for (const [key, value] of Object.entries(data.meals)) {
+                    localStorage.setItem(key, JSON.stringify(value));
+                }
+                
+                // Refresh app
+                initializeApp();
+                alert('Data imported successfully! ✅');
+            }
+        } catch (error) {
+            alert('Error reading backup file! ❌\nPlease make sure it\'s a valid Rotipani backup file.');
+        }
+    };
+    reader.readAsText(file);
+    
+    // Reset file input
+    event.target.value = '';
 }
 
 // Clear history
